@@ -2,7 +2,12 @@ import random
 
 
 BASES = ['A', 'T', 'C', 'G', 'N']
-COMPLEMENT = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
+COMPLEMENT = str.maketrans("ACTGN", "TGACN")
+
+
+def reverse_complement(seq):
+    seq = seq.upper()  # make sure it's uppercase
+    return seq.translate(COMPLEMENT)[::-1]
 
 
 def simulate_errors(error_rate, sequence):
@@ -21,13 +26,4 @@ def simulate_errors(error_rate, sequence):
         sequence_with_errors = sequence
 
     return sequence_with_errors, num_errors
-
-
-def reverse_complement(seq):
-
-    bases = list(seq)
-    bases = reversed([COMPLEMENT.get(base, base) for base in bases])
-    bases = ''.join(bases)
-
-    return bases
 

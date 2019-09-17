@@ -22,7 +22,7 @@ class Assembly:
             "--careful",
             "--only-assembler",
             "--threads",
-            "4"
+            "1"
             "-o",
             "."
         ]
@@ -36,7 +36,7 @@ class Assembly:
             self.reverse_reads
         ]
 
-        print("\t Running SPAdes subprocess for with command: \n\t{}".format(cli))
+        #print("\t Running SPAdes subprocess for with command: \n\t{}".format(cli))
 
         p = subprocess.Popen(cli, stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.communicate()
@@ -52,6 +52,7 @@ class Assembly:
 
         if p.returncode != 0:
             print("\terror while running SPAdes")
+            print(stderr)
 
         assembly_file = "{}_spades.fasta".format(self.ouput)
         os.rename("contigs.fasta", assembly_file)

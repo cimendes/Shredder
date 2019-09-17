@@ -3,10 +3,10 @@ from Shredder.utils import simulate_errors, reverse_complement
 
 
 class PairedEndReads:
-    def __init__(self, short_read_length, fasta_seq, coverage, fasta_name):
+    def __init__(self, short_read_length, fasta_seq, coverage, fasta_name, insert_size, insert_size_std):
         self.short_read_length = short_read_length
-        self.insert_size = 250
-        self.insert_size_std = 100
+        self.insert_size = insert_size
+        self.insert_size_std = insert_size_std
         self.output_sample_name = fasta_name
         self.fasta_seq = fasta_seq
         self.coverage = coverage
@@ -14,12 +14,9 @@ class PairedEndReads:
         self.error_rate = 0.05
 
     def generate(self):
+
         output_r1 = open('{}_R1.fastq'.format(self.output_sample_name), 'w+')
         output_r2 = open('{}_R2.fastq'.format(self.output_sample_name), 'w+')
-
-        print('\tRead lenth', self.short_read_length)
-        print('\tInsert size', self.insert_size)
-        print('\tInsert size std', self.insert_size_std)
 
         x = self.short_read_length
         self.Q_str = ''.join(['A'] * x)
@@ -71,10 +68,10 @@ class PairedEndReads:
 
         total_num_errors = total_r1_errors + total_r2_errors
 
-        print("\tWrote {} pairs into {} and {} with {} errors.".format(av_num_pairs_needed,
-                                                                       self.output_sample_name + '_R1.fastq',
-                                                                       self.output_sample_name + '_R2.fastq',
-                                                                       total_num_errors))
+        # print("\tWrote {} pairs into {} and {} with {} errors.".format(av_num_pairs_needed,
+        #                                                               self.output_sample_name + '_R1.fastq',
+        #                                                               self.output_sample_name + '_R2.fastq',
+        #                                                               total_num_errors))
 
         output_r1.close()
         output_r2.close()
