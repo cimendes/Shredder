@@ -16,13 +16,8 @@ class Assembly:
         else:
             self.kmers = [21, 33, 55, 67, 77]
 
+    def do_spades_assembly(self):
 
-    def do_SPAdes_assembly(self):
-
-        # TODO add check for spades!
-        # TODO add multithreading
-        # TODO add temp folder
-        # TODO add memory threshold
         cli = [
             "spades.py",
             "--careful",
