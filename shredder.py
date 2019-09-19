@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 import sys
+import shutil
 import os
 import argparse
-from multiprocessing import Pool
+import tempfile
+from multiprocessing import Pool, cpu_count
 from itertools import groupby
 from Shredder.generator import PairedEndReads
 from Shredder.assembler import Assembly
@@ -10,16 +12,23 @@ from Shredder.assembler import Assembly
 # TODO - SPAdes not working
 # TODO - Add spades thread option, with verification to ensure that threads * spades_threads < total_cpu
 
-def run_assembly(forward, reverse, filename, read_length):
 
-    assembly = Assembly(filename=filename.split('.')[0], forward=forward, reverse=reverse, read_length=read_length)
+def run_assembly(forward, reverse, filename, read_length, cpus):
+
+    dirpath = tempfile.mkdtemp(dir=os.getcwd())
+    print(dirpath)
+
+    assembly = Assembly(filename=filename.split('.')[0], forward=forward, reverse=reverse,
+                        read_length=read_length, output_dir=dirpath, cpus=cpus)
     assembly_file = assembly.do_SPAdes_assembly()
+
+    shutil.rmtree(dirpath)
 
     return assembly_file
 
 
 def gen_reads(config):
-    print("Generating reads for {} with {}x coverage:".format(config["reference"], config["coverage"]))
+    print("\tGenerating reads for {} with {}x coverage:".format(config["reference"], config["coverage"]))
 
     fh = open(config["reference"], "r")
     entry = (x[1] for x in groupby(fh, lambda line: line[0] == ">"))
@@ -38,7 +47,8 @@ def gen_reads(config):
 
 def run_shredder(config):
     forward, reverse = gen_reads(config)
-    assembly = run_assembly(forward, reverse, config["reference"], config["read-length"])
+    assembly = run_assembly(forward, reverse, config["reference"], config["read-length"],
+                            config["spades_cpus"], config["spades_mem"])
 
     return forward, reverse, assembly
 
@@ -54,7 +64,7 @@ def main():
     parser.add_argument('-l', '--read_length', help='Target read length', type=int, required=True)
     parser.add_argument('-c', '--coverage', help='Coverage, or list of coverages for each reference file (alphabetical)',
                         nargs='+', required=True, type=int)
-    parser.add_argument('-t', '--threads', help="Number of threads to use", required=False, default=2)
+    parser.add_argument('-t', '--threads', help="Number of threads to use", required=False, default=cpu_count()-2)
 
     # Optional arguments
     parser.add_argument('--insert_size', help="Paired-end read insert size.", type=int, default=140, required=False)
@@ -67,10 +77,14 @@ def main():
         coverage = [args.coverage[0]] * len(args.reference)
     else:
         if len(args.coverage) != len(args.reference):
-            print("number of coverage values and reference sequences don't match.")
+            print("Number of coverage values and reference sequences don't match.")
             sys.exit(1)
         else:
             coverage = args.coverage
+
+    if args.threads > cpu_count():
+        print("Number of cpus requested ({}) larger than the available cpus ({}).".format(args.threads, cpu_count()))
+        sys.exit(1)
 
     print("Saving shredded sample reads in: shredded_R1.fastq, shredded_R2.fastq")
     if os.path.isfile('shredded_R1.fastq') or os.path.isfile('shredded_R2.fastq'):
@@ -78,22 +92,31 @@ def main():
         os.remove('shredded_1.fastq')
         os.remove('shredded_2.fastq')
 
+    print("Generating reads..")
     to_multiprocess = []
     for file in args.reference:
         to_multiprocess.append({"reference": file,
                                 "coverage": coverage[args.reference.index(file)],
                                 "read-length": args.read_length,
                                 "insert-size": args.insert_size,
-                                "insert-size-std": args.insert_size_std})
+                                "insert-size-std": args.insert_size_std
+                                })
 
     reads = []
     p = Pool(processes=args.threads)
-    r = p.map_async(run_shredder, to_multiprocess, callback=reads.extend)
+    r = p.map_async(gen_reads, to_multiprocess, callback=reads.extend)
     r.wait()
 
     print(reads)
 
+    assemblies = []
+
+    print("Generating assemblies...")
+    for read_pair in reads:
+        assemblies.append(run_assembly(forward=read_pair[0], reverse=read_pair[1],
+                                       filename=read_pair[0].split('_R1.fastq')[0],
+                                       read_length=args.read_length, cpus=args.threads))
+
 
 if __name__ == '__main__':
     main()
-
