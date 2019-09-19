@@ -5,12 +5,13 @@ from subprocess import PIPE
 
 
 class Assembly:
-    def __init__(self, forward, reverse, filename, read_length, output_dir, cpus):
+    def __init__(self, forward, reverse, filename, read_length, output_dir, cpus, current_dir):
         self.forward_reads = forward
         self.reverse_reads = reverse
         self.ouput_name = filename
         self.output_dir = output_dir
         self.threads = cpus
+        self.current_dir = current_dir
         if read_length >= 175:
             self.kmers = [55, 77, 99, 113, 127]
         else:
@@ -56,7 +57,7 @@ class Assembly:
             print(stderr)
             print(stdout)
 
-        assembly_file = "{}_spades.fasta".format(self.ouput_name)
+        assembly_file = os.path.join(self.current_dir, "{}_spades.fasta".format(self.ouput_name))
         shutil.move(os.path.join(self.output_dir, "contigs.fasta"), assembly_file)
 
         return assembly_file

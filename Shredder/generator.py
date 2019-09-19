@@ -1,9 +1,10 @@
 import random
+import os
 from Shredder.utils import simulate_errors, reverse_complement
 
 
 class PairedEndReads:
-    def __init__(self, short_read_length, fasta_seq, coverage, fasta_name, insert_size, insert_size_std):
+    def __init__(self, short_read_length, fasta_seq, coverage, fasta_name, insert_size, insert_size_std, outdir):
         self.short_read_length = short_read_length
         self.insert_size = insert_size
         self.insert_size_std = insert_size_std
@@ -12,11 +13,12 @@ class PairedEndReads:
         self.coverage = coverage
         self.Q_str = ''
         self.error_rate = 0.05
+        self.outdir = outdir
 
     def generate(self):
 
-        output_r1 = open('{}_R1.fastq'.format(self.output_sample_name), 'w+')
-        output_r2 = open('{}_R2.fastq'.format(self.output_sample_name), 'w+')
+        output_r1 = open(os.path.join(self.outdir, '{}_R1.fastq'.format(self.output_sample_name)), 'w+')
+        output_r2 = open(os.path.join(self.outdir, '{}_R2.fastq'.format(self.output_sample_name)), 'w+')
 
         x = self.short_read_length
         self.Q_str = ''.join(['A'] * x)
@@ -66,7 +68,7 @@ class PairedEndReads:
                                                                                  read_2_stop, I))
             output_r2.write('%s\n' % self.Q_str)
 
-        total_num_errors = total_r1_errors + total_r2_errors
+        # total_num_errors = total_r1_errors + total_r2_errors
 
         # print("\tWrote {} pairs into {} and {} with {} errors.".format(av_num_pairs_needed,
         #                                                               self.output_sample_name + '_R1.fastq',
@@ -75,4 +77,6 @@ class PairedEndReads:
 
         output_r1.close()
         output_r2.close()
-        return '{}_R1.fastq'.format(self.output_sample_name), '{}_R2.fastq'.format(self.output_sample_name)
+
+        return os.path.join(self.outdir, '{}_R1.fastq'.format(self.output_sample_name)), \
+               os.path.join(self.outdir, '{}_R2.fastq'.format(self.output_sample_name))
