@@ -66,4 +66,4 @@ for each of the sequences in `-r` or, alternatively, a single value that will be
 ## TODO
 * Shuffle the resulting *in silico* metagenomic reads (possibly with [seqkit](https://github.com/shenwei356/seqkit)? 
 [shuffle.sh](https://sourceforge.net/projects/bbmap/) from BBtools? Full python alternative preferred).
-* Order resulting MAGs by sequence length. 
+* Order resulting MAGs by sequence length and rename contigs
