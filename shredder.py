@@ -95,8 +95,9 @@ def main():
         print("Number of cpus requested ({}) larger than the available cpus ({}).".format(args.threads, cpu_count()))
         sys.exit(1)
 
-    print("Saving shredded sample reads in: shredded_R1.fastq, shredded_R2.fastq")
-    print("Saving shredded assembly file in: shredded_assembly.fasta")
+    print("Saving shredded sample reads in: {}/shredded_R1.fastq, {}/shredded_R2.fastq".
+          format(args.outdir, args.outdir))
+    print("Saving shredded assembly file in: {}/shredded_assembly.fasta".format(args.outdir))
     if os.path.isfile(os.path.join(args.outdir, 'shredded_R1.fastq')) or \
             os.path.isfile(os.path.join(args.outdir, 'shredded_R2.fastq')) or \
             os.path.isfile(os.path.join(args.outdir, 'shredded_assembly.fasta')):
@@ -109,7 +110,7 @@ def main():
     read_file_2 = open(os.path.join(args.outdir, 'shredded_R2.fastq'), "w")
     assembly_file = open(os.path.join(args.outdir, "shredded_assembly.fasta"), "w")
 
-    print("Saving bins in: Bins/")
+    print("Saving bins in: {}/Bins/".format(args.outdir))
     try:
         os.mkdir(os.path.join(args.outdir, "Bins"))
     except OSError:
