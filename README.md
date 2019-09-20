@@ -59,3 +59,9 @@ for each of the sequences in `-r` or, alternatively, a single value that will be
                             (default: 60)
       -o OUTDIR, --outdir OUTDIR
                             Output directory (default: current directory)
+
+
+## TODO
+* Shuffle the resulting *in silico* metagenomic reads (possibly with [seqkit](https://github.com/shenwei356/seqkit)? 
+Full python alternative preferred).
+* Order resulting MAGs by sequence length. 
