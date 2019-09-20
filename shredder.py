@@ -25,6 +25,38 @@ def check_dependencies():
         print("SPAdes not found. Exiting...")
         sys.exit(1)
 
+    try:
+        cli = ["shuffle.sh", "-h"]
+        p = subprocess.Popen(cli, stdout=PIPE, stderr=PIPE)
+        stdout, _ = p.communicate()
+
+        print("shuffle.sh found.")
+
+    except OSError:
+        print("shuffle.sh not found. Exiting...")
+        sys.exit(1)
+
+
+def shuffle_reads(reads_1, reads_2, outdir):
+
+    cli = ["shuffle.sh",
+           "in={}".format(reads_1),
+           "in2={]".format(reads_2),
+           "out={}".format(os.path.join(outdir, "shuffled_" + os.path.basename(reads_1))),
+           "out2={}".format(os.path.join(outdir, "shuffled_" + os.path.basename(reads_2)))]
+    p = subprocess.Popen(cli, stdout=PIPE, stderr=PIPE)
+    stdout, stderr = p.communicate()
+
+    if p.returncode != 0:
+        print("\terror while running SPAdes")
+        print(stderr)
+        return None, None
+    else:
+        os.remove(reads_1)
+        os.remove(reads_2)
+        return os.path.join(outdir, "shuffled_" + os.path.basename(reads_1)), \
+               os.path.join(outdir, "shuffled_" + os.path.basename(reads_2))
+
 
 def run_assembly(forward, reverse, filename, read_length, cpus, outdir, memory):
 
@@ -152,10 +184,20 @@ def main():
     for file in assemblies:
         if file is not None:
             with open(file, "r") as infile_assembly:
-                shutil.copyfileobj(infile_assembly, assembly_file)
+                for line in infile_assembly:
+                    if line.startswith(">"):
+                        line = line.strip() + "_{}\n".format(os.path.basename(file).split(".")[0])
+                        assembly_file.write(line)
+                    else:
+                        assembly_file.write(line)
 
             shutil.move(file, os.path.join(args.outdir, "Bins",
                                            "Bin_" + str(assemblies.index(file)) + "_" + os.path.basename(file)))
+    read_file_1.close()
+    read_file_2.close()
+
+    print("Shuffling reads...")
+    shuffle_reads(read_file_1, read_file_2, args.outdir)
 
     print("Finished!")
 
