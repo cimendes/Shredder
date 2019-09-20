@@ -20,7 +20,9 @@ The easiest way to install this is through conda with the command `conda install
 
 
 You can download Shredder by cloning the GitHub repository and adding it to your PATH. 
+
 `git clone https://github.com/cimendes/Shredder.git`
+
 `export "PATH=$PWD/Shredder:$PATH"`
 
 
