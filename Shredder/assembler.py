@@ -5,13 +5,14 @@ from subprocess import PIPE
 
 
 class Assembly:
-    def __init__(self, forward, reverse, filename, read_length, output_dir, cpus, current_dir):
+    def __init__(self, forward, reverse, filename, read_length, output_dir, cpus, current_dir, memory):
         self.forward_reads = forward
         self.reverse_reads = reverse
         self.ouput_name = filename
         self.output_dir = output_dir
         self.threads = cpus
         self.current_dir = current_dir
+        self.mem_limit = memory
         if read_length >= 175:
             self.kmers = [55, 77, 99, 113, 127]
         else:
@@ -26,7 +27,9 @@ class Assembly:
             "--threads",
             str(self.threads),
             "-o",
-            self.output_dir
+            self.output_dir,
+            "-m",
+            str(self.mem_limit)
         ]
 
         cli += ["-k {}".format(",".join([str(x) for x in self.kmers]))]

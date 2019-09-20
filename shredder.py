@@ -26,12 +26,13 @@ def check_dependencies():
         sys.exit(1)
 
 
-def run_assembly(forward, reverse, filename, read_length, cpus, outdir):
+def run_assembly(forward, reverse, filename, read_length, cpus, outdir, memory):
 
     dirpath = tempfile.mkdtemp(dir=os.path.join(outdir, os.getcwd()))
 
     assembly = Assembly(filename=filename.split('.')[0], forward=forward, reverse=reverse,
-                        read_length=read_length, output_dir=dirpath, cpus=cpus, current_dir=outdir)
+                        read_length=read_length, output_dir=dirpath, cpus=cpus, current_dir=outdir,
+                        memory=memory)
     assembly_file = assembly.do_spades_assembly()
 
     shutil.rmtree(dirpath)
@@ -71,6 +72,7 @@ def main():
                         nargs='+', required=True, type=int)
     parser.add_argument('-t', '--threads', help="Number of threads to use", required=False, default=cpu_count()-2,
                         type=int)
+    parser.add_argument('-m', '--memory', help="Memory limit in GB", required=False, default=8)
 
     # Optional arguments
     parser.add_argument('--insert_size', help="Paired-end read insert size.", type=int, default=140, required=False)
@@ -140,7 +142,8 @@ def main():
     for read_pair in reads:
         assemblies.append(run_assembly(forward=read_pair[0], reverse=read_pair[1],
                                        filename=read_pair[0].split('_R1.fastq')[0],
-                                       read_length=args.read_length, cpus=args.threads, outdir=args.outdir))
+                                       read_length=args.read_length, cpus=args.threads,
+                                       outdir=args.outdir, memory=args.memory))
         with open(read_pair[0], 'r') as infile1:
             shutil.copyfileobj(infile1, read_file_1)
         with open(read_pair[1], 'r') as infile2:
@@ -151,7 +154,8 @@ def main():
             with open(file, "r") as infile_assembly:
                 shutil.copyfileobj(infile_assembly, assembly_file)
 
-            shutil.move(file, os.path.join(args.outdir, "Bins", "Bin_" + str(assemblies.index(file)) + "_" + file))
+            shutil.move(file, os.path.join(args.outdir, "Bins",
+                                           "Bin_" + str(assemblies.index(file)) + "_" + os.path.basename(file)))
 
     print("Finished!")
 
