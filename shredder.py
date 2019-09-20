@@ -146,10 +146,11 @@ def main():
             shutil.copyfileobj(infile2, read_file_2)
 
     for file in assemblies:
-        with open(file, "r") as infile_assembly:
-            shutil.copyfileobj(infile_assembly, assembly_file)
+        if file is not None:
+            with open(file, "r") as infile_assembly:
+                shutil.copyfileobj(infile_assembly, assembly_file)
 
-        shutil.move(file, os.path.join(args.outdir, "Bins", "Bin_" + str(assemblies.index(file)) + "_" + file))
+            shutil.move(file, os.path.join(args.outdir, "Bins", "Bin_" + str(assemblies.index(file)) + "_" + file))
 
     print("Finished!")
 

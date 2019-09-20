@@ -56,9 +56,10 @@ class Assembly:
             print("\terror while running SPAdes")
             print(stderr)
             print(stdout)
+            return None
+        else:
+            assembly_file = os.path.join(self.current_dir, "{}_spades.fasta".format(self.ouput_name))
+            shutil.move(os.path.join(self.output_dir, "contigs.fasta"), assembly_file)
 
-        assembly_file = os.path.join(self.current_dir, "{}_spades.fasta".format(self.ouput_name))
-        shutil.move(os.path.join(self.output_dir, "contigs.fasta"), assembly_file)
-
-        return assembly_file
+            return assembly_file
 
