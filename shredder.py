@@ -37,13 +37,13 @@ def check_dependencies():
         sys.exit(1)
 
 
-def shuffle_reads(reads_1, reads_2, outdir):
+def shuffle_reads(reads_1, reads_2)
 
     cli = ["shuffle.sh",
            "in={}".format(reads_1),
            "in2={}".format(reads_2),
-           "out={}".format(os.path.join(outdir, "shuffled_" + os.path.basename(reads_1))),
-           "out2={}".format(os.path.join(outdir, "shuffled_" + os.path.basename(reads_2)))]
+           "out={}".format(os.path.join(os.path.dirname(reads_1), "shuffled_" + os.path.basename(reads_1))),
+           "out2={}".format(os.path.join(os.path.dirname(reads_2), "shuffled_" + os.path.basename(reads_2)))]
 
     print("\t Running shuffle subprocess with command: \n\t{}".format(cli))
 
@@ -132,19 +132,22 @@ def main():
         print("Number of cpus requested ({}) larger than the available cpus ({}).".format(args.threads, cpu_count()))
         sys.exit(1)
 
-    print("Saving shredded sample reads in: {}/shredded_R1.fastq, {}/shredded_R2.fastq".
-          format(args.outdir, args.outdir))
+    reads_r1_filename = os.path.join(args.outdir, 'shredded_R1.fastq')
+    reads_r2_filename = os.path.join(args.outdir, 'shredded_R2.fastq')
+
+    print("Saving shredded sample reads in: {}, {}".
+          format(reads_r1_filename, reads_r2_filename))
+
     print("Saving shredded assembly file in: {}/shredded_assembly.fasta".format(args.outdir))
-    if os.path.isfile(os.path.join(args.outdir, 'shredded_R1.fastq')) or \
-            os.path.isfile(os.path.join(args.outdir, 'shredded_R2.fastq')) or \
+    if os.path.isfile(reads_r1_filename) or os.path.isfile(reads_r2_filename) or \
             os.path.isfile(os.path.join(args.outdir, 'shredded_assembly.fasta')):
         print("Output files already exist... Overwriting")
-        os.remove(os.path.join(args.outdir, 'shredded_R1.fastq'))
-        os.remove(os.path.join(args.outdir, 'shredded_R2.fastq'))
+        os.remove(reads_r1_filename)
+        os.remove(reads_r2_filename)
         os.remove(os.path.join(args.outdir, 'shredded_assembly.fasta'))
 
-    read_file_1 = open(os.path.join(args.outdir, 'shredded_R1.fastq'), "w")
-    read_file_2 = open(os.path.join(args.outdir, 'shredded_R2.fastq'), "w")
+    read_file_1 = open(reads_r1_filename, "w")
+    read_file_2 = open(reads_r2_filename, "w")
     assembly_file = open(os.path.join(args.outdir, "shredded_assembly.fasta"), "w")
 
     print("Saving bins in: {}/Bins/".format(args.outdir))
@@ -200,8 +203,7 @@ def main():
     read_file_2.close()
 
     print("Shuffling reads...")
-    shuffle_reads(read_file_1, read_file_2, args.outdir)
-
+    shuffle_reads(reads_r1_filename, reads_r1_filename)
     print("Finished!")
 
 
