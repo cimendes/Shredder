@@ -44,6 +44,9 @@ def shuffle_reads(reads_1, reads_2, outdir):
            "in2={}".format(reads_2),
            "out={}".format(os.path.join(outdir, "shuffled_" + os.path.basename(reads_1))),
            "out2={}".format(os.path.join(outdir, "shuffled_" + os.path.basename(reads_2)))]
+
+    print("\t Running shuffle subprocess with command: \n\t{}".format(cli))
+
     p = subprocess.Popen(cli, stdout=PIPE, stderr=PIPE)
     stdout, stderr = p.communicate()
 

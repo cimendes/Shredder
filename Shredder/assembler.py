@@ -41,7 +41,7 @@ class Assembly:
             self.reverse_reads
         ]
 
-        print("\t Running SPAdes subprocess for with command: \n\t{}".format(cli))
+        print("\t Running SPAdes subprocess with command: \n\t{}".format(cli))
 
         p = subprocess.Popen(cli, stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.communicate()
