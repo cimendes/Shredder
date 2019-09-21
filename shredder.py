@@ -48,7 +48,7 @@ def shuffle_reads(reads_1, reads_2, outdir):
     stdout, stderr = p.communicate()
 
     if p.returncode != 0:
-        print("\terror while running SPAdes")
+        print("\terror while running shuffle.sh")
         print(stderr)
         return None, None
     else:
