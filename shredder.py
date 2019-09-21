@@ -37,7 +37,7 @@ def check_dependencies():
         sys.exit(1)
 
 
-def shuffle_reads(reads_1, reads_2)
+def shuffle_reads(reads_1, reads_2):
 
     cli = ["shuffle.sh",
            "in={}".format(reads_1),
@@ -57,8 +57,8 @@ def shuffle_reads(reads_1, reads_2)
     else:
         os.remove(reads_1)
         os.remove(reads_2)
-        return os.path.join(outdir, "shuffled_" + os.path.basename(reads_1)), \
-               os.path.join(outdir, "shuffled_" + os.path.basename(reads_2))
+        return os.path.join(os.path.dirname(reads_1), "shuffled_" + os.path.basename(reads_1)), \
+               os.path.join(os.path.dirname(reads_2), "shuffled_" + os.path.basename(reads_2))
 
 
 def run_assembly(forward, reverse, filename, read_length, cpus, outdir, memory):
