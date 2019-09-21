@@ -41,7 +41,7 @@ def shuffle_reads(reads_1, reads_2, outdir):
 
     cli = ["shuffle.sh",
            "in={}".format(reads_1),
-           "in2={]".format(reads_2),
+           "in2={}".format(reads_2),
            "out={}".format(os.path.join(outdir, "shuffled_" + os.path.basename(reads_1))),
            "out2={}".format(os.path.join(outdir, "shuffled_" + os.path.basename(reads_2)))]
     p = subprocess.Popen(cli, stdout=PIPE, stderr=PIPE)
