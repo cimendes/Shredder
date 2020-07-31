@@ -15,18 +15,7 @@ from Shredder.assembler import Assembly
 def check_dependencies():
 
     try:
-        cli = ["spades.py", "--version"]
-        p = subprocess.Popen(cli, stdout=PIPE, stderr=PIPE)
-        stdout, _ = p.communicate()
-
-        print("SPades version {} found.".format(stdout.strip().split()[-1][1:].decode("utf8")))
-
-    except OSError:
-        print("SPAdes not found. Exiting...")
-        sys.exit(1)
-
-    try:
-        cli = ["shuffle.sh", "-h"]
+        cli = ["shuffle.sh", "-h"] #BBTools?
         p = subprocess.Popen(cli, stdout=PIPE, stderr=PIPE)
         stdout, _ = p.communicate()
 
@@ -104,7 +93,7 @@ def main():
     parser.add_argument('-r', '--reference', help='Path of a file or a folder of files', nargs='+')
     parser.add_argument('-l', '--read_length', help='Target read length', type=int, required=True)
     parser.add_argument('-c', '--coverage', help='Coverage, or list of coverages for each reference file (alphabetical)',
-                        nargs='+', required=True, type=int)
+                        nargs='+', required=True)
     parser.add_argument('-t', '--threads', help="Number of threads to use", required=False, default=cpu_count()-2,
                         type=int)
     parser.add_argument('-m', '--memory', help="Memory limit in GB", required=False, default=8)
@@ -118,6 +107,14 @@ def main():
     args = parser.parse_args()
 
     check_dependencies()
+
+    try:
+        args.coverage = args.coverage[0].split(',')
+    except AttributeError:
+        args.coverage = args.coverage[0]
+
+    print(args.coverage)
+    print(args.reference)
 
     if len(args.coverage) == 1:
         coverage = [args.coverage[0]] * len(args.reference)
@@ -138,31 +135,19 @@ def main():
     print("Saving shredded sample reads in: {}, {}".
           format(reads_r1_filename, reads_r2_filename))
 
-    print("Saving shredded assembly file in: {}/shredded_assembly.fasta".format(args.outdir))
-    if os.path.isfile(reads_r1_filename) or os.path.isfile(reads_r2_filename) or \
-            os.path.isfile(os.path.join(args.outdir, 'shredded_assembly.fasta')):
+    if os.path.isfile(reads_r1_filename) or os.path.isfile(reads_r2_filename):
         print("Output files already exist... Overwriting")
         os.remove(reads_r1_filename)
         os.remove(reads_r2_filename)
-        os.remove(os.path.join(args.outdir, 'shredded_assembly.fasta'))
 
     read_file_1 = open(reads_r1_filename, "w")
     read_file_2 = open(reads_r2_filename, "w")
-    assembly_file = open(os.path.join(args.outdir, "shredded_assembly.fasta"), "w")
-
-    print("Saving bins in: {}/Bins/".format(args.outdir))
-    try:
-        os.mkdir(os.path.join(args.outdir, "Bins"))
-    except OSError:
-        print("Bin folder already exists... Overwriting")
-        shutil.rmtree(os.path.join(args.outdir, "Bins"))
-        os.mkdir(os.path.join(args.outdir, "Bins"))
 
     print("Generating reads..")
     to_multiprocess = []
-    for file in args.reference:
-        to_multiprocess.append({"reference": file,
-                                "coverage": coverage[args.reference.index(file)],
+    for ref_file in args.reference:
+        to_multiprocess.append({"reference": ref_file,
+                                "coverage": coverage[args.reference.index(ref_file)],
                                 "read-length": args.read_length,
                                 "insert-size": args.insert_size,
                                 "insert-size-std": args.insert_size_std,
@@ -174,31 +159,6 @@ def main():
     r = p.map_async(gen_reads, to_multiprocess, callback=reads.extend)
     r.wait()
 
-    assemblies = []
-
-    print("Generating assemblies...")
-    for read_pair in reads:
-        assemblies.append(run_assembly(forward=read_pair[0], reverse=read_pair[1],
-                                       filename=read_pair[0].split('_R1.fastq')[0],
-                                       read_length=args.read_length, cpus=args.threads,
-                                       outdir=args.outdir, memory=args.memory))
-        with open(read_pair[0], 'r') as infile1:
-            shutil.copyfileobj(infile1, read_file_1)
-        with open(read_pair[1], 'r') as infile2:
-            shutil.copyfileobj(infile2, read_file_2)
-
-    for file in assemblies:
-        if file is not None:
-            with open(file, "r") as infile_assembly:
-                for line in infile_assembly:
-                    if line.startswith(">"):
-                        line = line.strip() + "_{}\n".format(os.path.basename(file).split(".")[0])
-                        assembly_file.write(line)
-                    else:
-                        assembly_file.write(line)
-
-            shutil.move(file, os.path.join(args.outdir, "Bins",
-                                           "Bin_" + str(assemblies.index(file)) + "_" + os.path.basename(file)))
     read_file_1.close()
     read_file_2.close()
 

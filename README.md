@@ -3,21 +3,16 @@
 
 
 To properly benchmark metagenomic software a set of golden standards are necessary for fair comparison. Shredder 
-is a very simple python tool that aims to recreate the best possible outcome out of a metagenomic analysis process: 
-reads, assembly and bins. 
-
+is a very simple python tool that aims to recreate a mock community. 
 
 When provided with complete reference sequences, shredder will generate artificial sequencing reads, in Illumina 
 paired-end form, with a given target coverage. The reads generates will cover the reference genome uniformly. 
-Each read dataset, prior to being (TODO: shuffled and) concatenated in a single metagenomic sequencing dataset, is 
-assembled with SPAdes. Each resulting assembly is saved as a Bin file, and all assemblies are concatenated (TODO: 
-ordered by length) into a single metagenomic assembled contigs file. 
 
 
 ## Dependencies & Installation
-Right now the only dependency is [SPAdes](http://cab.spbu.ru/software/spades/). I hope to remove this in the future. 
-The easiest way to install this is through conda with the command `conda install -c bioconda spades`. 
 
+Right now the only dependency is `shuffle.sh` from BBtools. Installation instructions are available [here](https://jgi.doe.gov/data-and-tools/bbtools/bb-tools-user-guide/installation-guide/). 
+You need to add it to your path.
 
 You can download Shredder by cloning the GitHub repository and adding it to your PATH. 
 
@@ -66,4 +61,4 @@ for each of the sequences in `-r` or, alternatively, a single value that will be
 ## TODO
 * Shuffle the resulting *in silico* metagenomic reads (possibly with [seqkit](https://github.com/shenwei356/seqkit)? 
 [shuffle.sh](https://sourceforge.net/projects/bbmap/) from BBtools? Full python alternative preferred).
-* Order resulting MAGs by sequence length and rename contigs
+* make a container for Shredder
